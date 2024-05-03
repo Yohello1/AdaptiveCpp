@@ -7,7 +7,6 @@ Summary:	Adaptive cpp on the copr repository, i think
 Group:		Applications/System
 License:	BSD-2
 URL:		https://github.com/AdaptiveCpp/AdaptiveCpp
-Source0:	https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.02.0.tar.gz
 BuildRequires:	git llvm-devel clang boost-devel cmake python3.12 ninja-build wget spirv-headers-devel clang-devel
 
 %description
@@ -37,6 +36,7 @@ cmake .. -G Ninja
 ninja
 
 %install
+sudo ninja install
 
 %changelog
  * Mon Apr 20 2024 Siracha Sauce <mp2702737@gmail.com> - 0.1.1
