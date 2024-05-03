@@ -8,7 +8,7 @@ Group:		Applications/System
 License:	BSD-2
 URL:		https://github.com/AdaptiveCpp/AdaptiveCpp
 Source0:	https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.02.0.tar.gz
-BuildRequires:	git llvm-devel clang boost-devel cmake python3.12 ninja-build wget spirv-headers-devel clang-devel-18
+BuildRequires:	git llvm-devel clang boost-devel cmake python3.12 ninja-build wget spirv-headers-devel clang-devel
 
 %description
 Description of the package
