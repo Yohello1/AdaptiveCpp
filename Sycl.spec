@@ -1,4 +1,5 @@
 %define acpp_package %{nil}
+%define _unpackaged_files_terminate_build 0
 
 Name:		AdapativeCPP
 Version:	24.02.0
