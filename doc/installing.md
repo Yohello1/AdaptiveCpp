@@ -38,8 +38,19 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/your/desired/install/location ..
 make install
 ```
-If it does not find some backends or does not pick up the right LLVM, please look at the documentation for the individual components linked below.
+If the build system attempts to use backends that you do not want, they can be disabled using the `-DWITH_[BACKEND_NAME]_BACKEND=OFF` flag in the CMake configuration.
+For example, to disable the `ROCm` backend, you can use:
 
+```
+cmake -DWITH_ROCM_BACKEND=OFF
+```
+The available backend names for this flag are;
+- `CUDA`
+- `ROCM`
+- `LEVEL_ZERO` (for Spir-V devices using Level Zero)
+- `OPENCL` (for Spir-V/OpenCL devices)
+
+Additionally, if certain backends are not found or the wrong LLVM installation is selected, please refer to the relevant documentation for each component, linked in the corresponding sections of this document.
 
 ### Advanced installation
 
