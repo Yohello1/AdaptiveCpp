@@ -1,4 +1,3 @@
-
 # Building and Installing AdaptiveCpp
 
 This guide provides instructions for building and installing AdaptiveCpp from source. 
@@ -110,4 +109,3 @@ For specific hardware and driver configurations, see the following dedicated gui
 ## Advanced Installation Methods
 
 For complex scenarios, such as linking AdaptiveCpp directly into LLVM or performing a 2-stage bootstrap build on macOS, see the [**Advanced Installation Guide**](advanced-builds.md).
-
