@@ -182,7 +182,7 @@ HIPSYCL_BUILTIN T __acpp_fmod(T x, T y) noexcept {
 }
 
 template<class T>
-T __acpp_fract(T x, T* ptr) noexcept {
+HIPSYCL_BUILTIN T __acpp_fract(T x, T* ptr) noexcept {
   HIPSYCL_RETURN_DISPATCH_BUILTIN(__acpp_fract, x, ptr);
 }
 
@@ -208,7 +208,7 @@ HIPSYCL_BUILTIN T __acpp_ldexp(T x, int k) noexcept {
 
 template<class T>
 HIPSYCL_BUILTIN T __acpp_lgamma(T x) noexcept {
-  HIPSYCL_RETURN_DISPATCH_BUILTIN(__acpp_acos, x);
+  HIPSYCL_RETURN_DISPATCH_BUILTIN(__acpp_lgamma, x);
 }
 
 template<class T>

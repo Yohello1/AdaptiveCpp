@@ -29,10 +29,10 @@ namespace {
 
 int device_arch_string_to_int(const std::string& device_name) {
   std::string prefix = "gfx";
-  
+
   if(device_name.find(prefix) != 0)
     return 0;
-  
+
   std::string substr = device_name;
   substr.erase(0, prefix.length());
 
@@ -48,11 +48,24 @@ int device_arch_string_to_int(const std::string& device_name) {
   return std::stoi(substr, nullptr, 16);
 }
 
+std::pair<int,int> get_stream_priority_bound() {
+  int lowest, highest;
+  auto err = hipDeviceGetStreamPriorityRange(&lowest, &highest);
+  if(err != hipSuccess){
+    register_error(
+        __acpp_here(),
+        error_info{"hip_hardware_manager: Could not query stream priority range",
+                   error_code{"HIP", err}});
+    return {0, 0};
+  }
+  return {lowest, highest};
+}
+
 }
 
 hip_hardware_manager::hip_hardware_manager(hardware_platform hw_platform)
     : _hw_platform(hw_platform) {
-  
+
   if (has_device_visibility_mask(
           application::get_settings().get<setting::visibility_mask>(),
           backend_id::hip)) {
@@ -60,7 +73,7 @@ hip_hardware_manager::hip_hardware_manager(hardware_platform hw_platform)
         __acpp_here(),
         error_info{
             "hip_hardware_manager: HIP backend does not support device "
-            "visibility masks. Use HIP_VISIBILE_DEVICES instead."});
+            "visibility masks. Use HIP_VISIBLE_DEVICES instead."});
   }
 
   int num_devices = 0;
@@ -76,7 +89,7 @@ hip_hardware_manager::hip_hardware_manager(hardware_platform hw_platform)
                     error_code{"HIP", err}});
     }
   }
-  
+
   for (int dev = 0; dev < num_devices; ++dev) {
     _devices.emplace_back(dev);
   }
@@ -270,6 +283,12 @@ bool hip_hardware_context::has(device_support_aspect aspect) const {
   case device_support_aspect::work_item_independent_forward_progress:
     return false;
     break;
+  case device_support_aspect::fp64:
+    return true;
+    break;
+  case device_support_aspect::atomic64:
+    return true;
+    break;
   }
   assert(false && "Unknown device aspect");
   std::terminate();
@@ -442,6 +461,12 @@ hip_hardware_context::get_property(device_uint_property prop) const {
   case device_uint_property::backend_id:
     return static_cast<int>(backend_id::hip);
     break;
+  case device_uint_property::queue_priority_range_low:
+    return get_stream_priority_bound().first;
+    break;
+  case device_uint_property::queue_priority_range_high:
+    return get_stream_priority_bound().second;
+    break;
   }
   assert(false && "Invalid device property");
   std::terminate();
@@ -469,7 +494,7 @@ std::string hip_hardware_context::get_driver_version() const {
         error_info{"hip_hardware_manager: Querying driver version failed",
                    error_code{"HIP", err}});
   }
-  
+
   return std::to_string(driver_version);
 }
 

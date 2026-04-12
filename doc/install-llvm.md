@@ -12,17 +12,18 @@ Usually, the clang/LLVM versions provided in Linux distribution repositories are
 If you are using Ubuntu or Debian, we can also recommend the package repositories at `http://apt.llvm.org` if you wish to obtain a newer LLVM.
 
 Install
-* clang (including development headers)
-* LLVM (including development headers)
-* libomp (including development headers)
-* lld (only for the ROCm backend)
 
-For example, the required steps to install clang 16 on an Ubuntu system are:
+* clang (including development headers)
+* LLVM (including development headers and llc/opt tools)
+* libomp (including development headers)
+* lld
+
+For example, the required steps to install clang 20 on an Ubuntu system are:
 ```
 wget https://apt.llvm.org/llvm.sh #Convenience script that sets up the repositories
 chmod +x llvm.sh
-./llvm.sh 16 #Set up repositories for clang 16
-apt install -y libclang-16-dev clang-tools-16 libomp-16-dev llvm-16-dev lld-16
+./llvm.sh 20 #Set up repositories for clang 20
+apt install -y libclang-20-dev clang-tools-20 libomp-20-dev llvm-20-dev lld-20
 ```
 
 #### Only if you wish to compile LLVM from source (not recommended)
@@ -72,14 +73,15 @@ make install
 When invoking cmake, the AdaptiveCpp build infrastructure will attempt to find LLVM automatically (see below for how to invoke cmake).
 
 If AdaptiveCpp does not automatically configure the build for the desired clang/LLVM installation, the following cmake variables can be used to point AdaptiveCpp to the right one:
+
 * `-DLLVM_DIR=/path/to/llvm/cmake` must be pointed to your LLVM installation, specifically, the **subdirectory containing the LLVM cmake files**. Note that different LLVM installations may have the LLVM cmake files in different subdirectories that don't necessarily end with `cmake` (e.g. it might also be `/path/to/llvm/lib/cmake/llvm`). Alternatively, you can try `-DLLVM_ROOT` which might be more forgiving.
 
 Verify from the cmake that the selected `clang++` and include headers match the LLVM that you have requested. Example output:
 ```
 ...
--- Building AdaptiveCpp against LLVM configured from /usr/lib/llvm-16/cmake/
--- Selecting clang: /usr/bin/clang++-16
--- Using clang include directory: /usr/include/clang/16.0.1/include/..
+-- Building AdaptiveCpp against LLVM configured from /usr/lib/llvm-20/cmake
+-- Selecting clang: /usr/lib/llvm-20/bin/clang++
+-- Using clang include directory: /usr/lib/llvm-20/lib/clang/20/include/..
 ...
 ```
 
@@ -108,6 +110,7 @@ In that case, clang can be informed about the location of the GCC toolchain usin
 *Note:* This flag is very picky about the directory!. It needs to be provided with the parent directory that contains the `lib/gcc/<arch>/<version>` subdirectories. On a Cray system, this might e.g. be `--gcc-toolchain=/opt/cray/pe/gcc/12.2.0/snos`. If an incorrect path is provided, clang may silently ignore the argument. Use `clang++ -v /dev/null` as described above to check that it has accepted the GCC installation.
 
 While in theory AdaptiveCpp can be made to use that flag when compiling, a simpler solution to make that change permanent is to use clang configuration files ([details in the clang documentation](https://clang.llvm.org/docs/UsersManual.html#id25)):
+
 1. In the directory where `clang++` lives (e.g. some `bin` directory), create a new file `<name>.cfg`, replacing `<name>` with something of your choice.
 2. Put any flags that you want clang to use by default into this file, such as the `--gcc-toolchain=...` flag.
 3. Create a symlink to clang in the same directory that `clang++` and the config file exist in: `ln -s clang++ <name>-clang++`, again replacing `<name>` with the name of your config file.

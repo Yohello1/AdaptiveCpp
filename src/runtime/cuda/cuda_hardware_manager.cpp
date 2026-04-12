@@ -26,6 +26,22 @@
 namespace hipsycl {
 namespace rt {
 
+namespace
+{
+std::pair<int,int> get_stream_priority_bound() {
+  int lowest, highest;
+  auto err = cudaDeviceGetStreamPriorityRange(&lowest, &highest);
+  if(err != cudaSuccess){
+    register_error(
+        __acpp_here(),
+        error_info{"cuda_hardware_manager: Could not query stream priority range",
+                   error_code{"CUDA", err}});
+    return {0, 0};
+  }
+  return {lowest, highest};
+}
+}
+
 cuda_hardware_manager::cuda_hardware_manager(hardware_platform hw_platform)
     : _hw_platform(hw_platform) {
 
@@ -36,7 +52,7 @@ cuda_hardware_manager::cuda_hardware_manager(hardware_platform hw_platform)
         __acpp_here(),
         error_info{
             "cuda_hardware_manager: CUDA backend does not support device "
-            "visibility masks. Use CUDA_VISIBILE_DEVICES instead."});
+            "visibility masks. Use CUDA_VISIBLE_DEVICES instead."});
   }
 
   int num_devices = 0;
@@ -52,7 +68,7 @@ cuda_hardware_manager::cuda_hardware_manager(hardware_platform hw_platform)
                     error_code{"CUDA", err}});
     }
   }
-  
+
   for (int dev = 0; dev < num_devices; ++dev) {
     _devices.emplace_back(dev);
   }
@@ -115,7 +131,7 @@ std::size_t cuda_hardware_context::get_platform_index() const {
   return 0;
 }
 
-cuda_hardware_context::cuda_hardware_context(int dev) 
+cuda_hardware_context::cuda_hardware_context(int dev)
   : _dev{dev} {
   _properties = std::make_unique<cudaDeviceProp>();
   auto err = cudaGetDeviceProperties(_properties.get(), dev);
@@ -233,6 +249,12 @@ bool cuda_hardware_context::has(device_support_aspect aspect) const {
   case device_support_aspect::work_item_independent_forward_progress:
     return _properties->major >= 7;
     break;
+  case device_support_aspect::fp64:
+    return true;
+    break;
+  case device_support_aspect::atomic64:
+    return true;
+    break;
   }
   assert(false && "Unknown device aspect");
   std::terminate();
@@ -329,7 +351,18 @@ cuda_hardware_context::get_property(device_uint_property prop) const {
     return 2;
     break;
   case device_uint_property::max_clock_speed:
+#if CUDART_VERSION >= 13000
+    {
+      int clockRate = 0;
+      auto err = cudaDeviceGetAttribute(&clockRate, cudaDevAttrClockRate, _dev);
+      if (err == cudaSuccess)
+        return clockRate / 1000;
+      else
+        return 0;
+    }
+#else
     return _properties->clockRate / 1000;
+#endif
     break;
   case device_uint_property::max_malloc_size:
     return _properties->totalGlobalMem;
@@ -406,6 +439,12 @@ cuda_hardware_context::get_property(device_uint_property prop) const {
   case device_uint_property::backend_id:
     return static_cast<int>(backend_id::cuda);
     break;
+  case device_uint_property::queue_priority_range_low:
+    return get_stream_priority_bound().first;
+    break;
+  case device_uint_property::queue_priority_range_high:
+    return get_stream_priority_bound().second;
+    break;
   }
   assert(false && "Invalid device property");
   std::terminate();
@@ -433,7 +472,7 @@ std::string cuda_hardware_context::get_driver_version() const {
         error_info{"cuda_hardware_manager: Querying driver version failed",
                    error_code{"CUDA", err}});
   }
-  
+
   return std::to_string(driver_version);
 }
 

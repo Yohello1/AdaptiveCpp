@@ -182,7 +182,10 @@ HIPSYCL_BUILTIN T __acpp_fmod(T x, T y) noexcept {
 }
 
 template<class T>
-T __acpp_fract(T x, T* ptr) noexcept;
+HIPSYCL_BUILTIN T __acpp_fract(T x, T* ptr) noexcept {
+  *ptr = std::floor(x);
+  return std::fmin(x - *ptr, std::nextafter(T(1), T(0)));
+}
 
 template<class T>
 HIPSYCL_BUILTIN T __acpp_frexp(T x, int* y) noexcept {
@@ -263,13 +266,11 @@ HIPSYCL_BUILTIN T __acpp_minmag(T x, T y) noexcept {
   return (abs_x < abs_y) ? x : y;
 }
 
-template<class T>
-HIPSYCL_BUILTIN T __acpp_modf(float x, float* y) noexcept {
+HIPSYCL_BUILTIN float __acpp_modf(float x, float* y) noexcept {
   return std::modf(x, y);
 }
 
-template<class T>
-HIPSYCL_BUILTIN T __acpp_modf(double x, double* y) noexcept {
+HIPSYCL_BUILTIN double __acpp_modf(double x, double* y) noexcept {
   return std::modf(x, y);
 }
 
@@ -305,7 +306,7 @@ HIPSYCL_BUILTIN T __acpp_rint(T x) noexcept {
 
 template<class T>
 HIPSYCL_BUILTIN T __acpp_rootn(T x, int y) noexcept {
-  return std::pow(x, T{1}/T{y});
+  return std::pow(x, T{1}/static_cast<T>(y));
 }
 
 template<class T>
